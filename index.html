@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sandbox</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"
+        integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF"
+        crossorigin="anonymous"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+  <style type="text/css">
+    table{
+      counter-reset: row-num-1;
+    }
+    table tr {
+      counter-increment: row-num;
+    }
+    table tr td:first-child::before {
+        content: counter(row-num);
+    }
+  </style>
+</head>
+<body>
+  </div>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Sandbox</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-link active" href="#">Buku <span class="sr-only">(current)</span></a>
+      </div>
+    </div>
+  </nav>
+  <div class="d-flex flex-column">
+    <div id="spinner-liga" class="d-flex justify-content-center mt-2">
+        <div class="spinner-border text-secondary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+  <div class="container">
+    <div class="card shadow mt-4">
+      <div class="ml-2 mr-2 mt-2">
+        <h4 class="clearfix"><span class="float-left">
+          List Data Buku
+          </span>
+          <button type="button" class="float-right btn btn-info" data-toggle="modal" data-target="#exampleModal">
+            Tambah Buku
+          </button>
+        </h4>
+      </div>
+
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th scope="col">No</th>
+            <th scope="col">Nama</th>
+            <th scope="col">Kategori</th>
+            <th scope="col">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="databuku">
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Tambah Buku</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="form-add">
+              <div class="modal-body">
+                  <div class="form-group">
+                      <label for="name">Nama Buku</label>
+                      <input id="name" class="form-control" type="text" name="name" required="">
+                  </div>
+                  <div class="form-group">
+                      <label for="kategori">Kategori</label>
+                      <select id="kategori" class="form-control" name="type_books_id" required="">
+                        <option value=""  disabled="" selected="">Pilih kategori</option>
+                      </select>
+                  </div>
+              </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" onclick="inputBuku()">Tambah Buku</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    $( document ).ready(function(){
+        getListBook()
+        getKategori()
+    });
+
+    const getListBook = () => {
+        $(".spinner-border").show() 
+        $.ajax({
+            type: "GET",
+            url : "https://mybook-order.herokuapp.com/books",
+            dataType: "json",
+            success: function(response){
+                let htmlListBook = ""
+                response.data.forEach(item => {
+                    htmlListBook += `<tr>
+                                        <td></td>
+                                        <td>${item.name}</td>
+                                        <td>${item.type_book.name}</td>
+                                        <td><button class="btn btn-sm btn-danger" onclick="deleteListBook(${item.id})" type="button">delete</button></td>
+                                    </tr>`
+                    
+                });
+                $(".spinner-border").hide()
+                $("#databuku").html(htmlListBook);
+            }
+        });
+    };
+
+    const deleteListBook = async (id) => {
+      const { isConfirmed } = await Swal.fire({
+                title: 'Apakah kamu yakin?',
+                text: "menghapus data buku " + name,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yakin'
+      });
+      if (isConfirmed){
+        $(".spinner-border").show()
+        $.ajax({
+          type: "DELETE",
+          url: "https://mybook-order.herokuapp.com/books/",
+          data : JSON.stringify({ id }),
+          dataType: "json",
+          contentType : "application/json; charset=UTF-8",
+          success: function (response) {
+              if (response.success) {
+                  getListBook()
+                  Swal.fire({
+                      title: "Berhasil!",
+                      text: response.message,
+                      icon: "success"
+                  })
+              }
+              else
+                  Swal.fire({
+                      title: "Gagal!",
+                      text: response.message,
+                      icon: "error"
+              })
+          }
+        });
+      }
+      
+    }
+  
+    const getKategori = () => {
+      $.ajax({
+        type: "GET",
+        url: "https://mybook-order.herokuapp.com/books/type",
+        dataType: "json",
+        success: function (response) {
+          let htmlListKategori = ""
+          response.data.forEach(item => {
+            htmlListKategori += `<option value="${item.id}" name="kategori">${item.name}</option>`
+          });
+          $("#kategori").html(htmlListKategori);
+        }
+      });
+    };
+
+    const inputBuku = () => {
+      const payload = {
+        'name' : $('input[name=name]').val(),
+        'type_books_id' : $('option[name=kategori]').val(),
+      };
+      $(".spinner-border").show()
+      $("#exampleModal").modal("hide")
+      $.ajax({
+        type: "POST",
+        url: "https://mybook-order.herokuapp.com/books", 
+        dataType: "json",
+        contentType : 'application/json; charset=UTF-8',
+        data: JSON.stringify(payload),
+        success: function (response) {
+          if (response.success) {
+                        getListBook()
+                        Swal.fire({
+                            title: "Berhasil!",
+                            text: response.message,
+                            icon: "success"
+                        })
+                        $("#name").val("")
+                        $("#kategori").val("")
+                    }
+                    else {
+                        $("#exampleModal").modal("show")
+                        Swal.fire({
+                            title: "Gagal!",
+                            text: response.message,
+                            icon: "error"
+                        })
+                    }
+        },
+        done: (res) => {
+            $(".spinner-border").hide()
+        },
+        error: (response) => {
+            $("#exampleModal").modal("show")
+            Swal.fire({
+                  title: "Gagal!",
+                  text: response.statusText,
+                  icon: "error"
+            })
+        }
+      });
+    };
+  </script>
+</body>
+</html>
